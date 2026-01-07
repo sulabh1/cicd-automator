@@ -7,8 +7,10 @@
     "jenkins-generator": "./dist/cli.js"
   },
   "author": "SWIKRIT(AKA SULABH) ADHIKARI <sulabhadhikari90@gmail.com>",
-  "private": true,
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/sulabh1/cicd-automator.git"
