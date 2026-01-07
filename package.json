@@ -1,14 +1,22 @@
 {
-  "name": "cicd-automator",
+  "name": "jenkins-generator",
   "version": "1.0.0",
-  "description": "Automate Jenkins CICD pipeline generator for multi-cloud deployments",
+  "description": "Automated Jenkins CI/CD pipeline generator for multi-cloud deployments (AWS, Azure, GCP, DigitalOcean)",
   "main": "dist/index.js",
   "bin": {
-    "auto-cicd": "./dist/cli.js"
+    "jenkins-generator": "./dist/cli.js"
   },
-  "author": "SWIKRIT(AKA SULABH) ADHIKARI",
+  "author": "SWIKRIT(AKA SULABH) ADHIKARI <sulabhadhikari90@gmail.com>",
   "private": true,
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sulabh1/cicd-automator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sulabh1/cicd-automator/issues"
+  },
+  "homepage": "https://github.com/sulabh1/cicd-automator#readme",
   "scripts": {
     "build": "tsc",
     "start": "node dist/cli.js",
@@ -17,11 +25,18 @@
   "keywords": [
     "jenkins",
     "cicd",
+    "ci/cd",
+    "pipeline",
+    "automation",
     "aws",
     "azure",
     "gcp",
     "digitalocean",
-    "sutomation"
+    "docker",
+    "deployment",
+    "devops",
+    "continuous-integration",
+    "continuous-deployment"
   ],
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -44,6 +59,7 @@
     "typescript": "^5.7.3"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
   }
 }

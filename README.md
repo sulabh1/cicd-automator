@@ -1,8 +1,8 @@
-# Auto CICD Generator 🚀
+# Jenkins Generator 🚀
 
 > **Automated Jenkins CI/CD pipeline generator for multi-cloud deployments**
 
-[![npm version](https://badge.fury.io/js/%40yourorg%2Fauto-cicd-generator.svg)](https://badge.fury.io/js/%40yourorg%2Fauto-cicd-generator)
+[![npm version](https://badge.fury.io/js/jenkins-generator.svg)](https://badge.fury.io/js/jenkins-generator)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
 
@@ -73,7 +73,7 @@ Never worry about CI/CD configuration again! This tool automatically generates p
 **After:**
 
 ```
-✅ Run one command: auto-cicd
+✅ Run one command: jenkins-generator
 ✅ Answer a few questions
 ✅ Get production-ready pipeline
 ✅ Complete documentation included
@@ -86,13 +86,13 @@ Never worry about CI/CD configuration again! This tool automatically generates p
 ### Global Installation (Recommended)
 
 ```bash
-npm install -g @yourorg/auto-cicd-generator
+npm install -g jenkins-generator
 ```
 
 ### Local Installation
 
 ```bash
-npm install --save-dev @yourorg/auto-cicd-generator
+npm install --save-dev jenkins-generator
 ```
 
 ### Requirements
@@ -114,7 +114,7 @@ cd your-awesome-project
 ### 2. Run the Generator
 
 ```bash
-auto-cicd
+jenkins-generator
 ```
 
 ### 3. Answer Questions
@@ -164,14 +164,14 @@ Push your code and watch Jenkins automatically:
 - ✅ Verify health
 - ✅ Send notifications
 
-## 📚 Detailed Usage
+## 📚 Usage Examples
 
 ### Example 1: Node.js API on AWS
 
 ```bash
-$ auto-cicd
+$ jenkins-generator
 
-🚀 Auto CICD Generator
+🚀 Jenkins Generator
 
 ? Enter your project name: my-api
 ? Select project type: backend
@@ -179,548 +179,151 @@ $ auto-cicd
 ? Enter Git repository URL: https://github.com/user/my-api.git
 ? Enter branch name to deploy: master
 ? Does your project have a Dockerfile? Yes
-? Enter Dockerfile path: ./Dockerfile
 ? Should tests run before deployment? Yes
-? Enter test command: npm test
-? Enter build command: npm run build
 ? Select cloud provider: aws
-? Enter AWS Access Key ID: AKIA************
-? Enter AWS Secret Access Key: ********
 ? Select AWS region: us-east-1
-? Select instance/tier type: t2.small
-? Enter deployment tier: production
+? Select instance type: t2.small
 ? Enable auto-scaling? Yes
-? Enter minimum instances: 2
-? Enter maximum instances: 10
-? Enter health check endpoint path: /api/health
-? Enter application port: 3000
-? Enter email for notifications: devops@company.com
-? Select additional notification platforms: slack, discord
-? Enter slack webhook URL: https://hooks.slack.com/services/...
-? Enter discord webhook URL: https://discord.com/api/webhooks/...
-? Enter Jenkins agent label: docker
-? Enter pipeline timeout (in minutes): 60
-? Enter retry count for failed stages: 2
 
-✅ CICD Pipeline generated successfully!
+✅ Jenkins pipeline generated successfully!
 ```
 
 ### Example 2: React App on GCP
 
 ```bash
-$ auto-cicd
-
-🚀 Auto CICD Generator
+$ jenkins-generator
 
 ? Enter your project name: my-react-app
 ? Select project type: frontend
 ? Select programming language: javascript
-? Enter Git repository URL: https://github.com/user/my-react-app.git
-? Enter branch name to deploy: main
-? Does your project have a Dockerfile? Yes
-? Enter Dockerfile path: ./Dockerfile
-? Should tests run before deployment? Yes
-? Enter test command: npm test
-? Enter build command: npm run build
 ? Select cloud provider: gcp
-? Enter GCP Project ID: my-project-123456
-? Enter path to GCP service account key file: ./gcp-key.json
 ? Select GCP region: us-central1
-? Select instance/tier type: e2-small
-? Enter deployment tier: production
-? Enable auto-scaling? No
-? Enter health check endpoint path: /
-? Enter application port: 80
-? Enter email for notifications: team@company.com
-? Select additional notification platforms: teams
-? Enter teams webhook URL: https://outlook.office.com/webhook/...
-? Enter Jenkins agent label: docker
-? Enter pipeline timeout (in minutes): 45
-? Enter retry count for failed stages: 3
 
-✅ CICD Pipeline generated successfully!
+✅ Jenkins pipeline generated successfully!
 ```
 
-### Example 3: Full-Stack App on DigitalOcean
+## 🏗️ What Gets Generated
 
-```bash
-$ auto-cicd
+### Jenkinsfile
 
-🚀 Auto CICD Generator
+Complete Jenkins pipeline with:
 
-? Enter your project name: my-fullstack-app
-? Select project type: fullstack
-? Select programming language: typescript
-? Enter Git repository URL: https://gitlab.com/user/my-fullstack-app.git
-? Enter branch name to deploy: master
-? Does your project have a Dockerfile? Yes
-? Enter Dockerfile path: ./Dockerfile
-? Should tests run before deployment? Yes
-? Enter test command: npm run test:all
-? Enter build command: npm run build
-? Select cloud provider: digitalocean
-? Enter DigitalOcean API Token: ********************************
-? Select DigitalOcean region: nyc3
-? Select instance/tier type: s-2vcpu-4gb
-? Enter deployment tier: staging
-? Enable auto-scaling? No
-? Enter health check endpoint path: /health
-? Enter application port: 8080
-? Enter email for notifications: staging@company.com
-? Select additional notification platforms: telegram
-? Enter telegram webhook URL: https://api.telegram.org/bot.../
-? Enter Jenkins agent label: docker
-? Enter pipeline timeout (in minutes): 90
-? Enter retry count for failed stages: 2
+- Git checkout
+- Dependency installation
+- Test execution (optional)
+- Application build
+- Docker image creation
+- Registry push
+- Cloud deployment
+- Health checks
+- Notifications
 
-✅ CICD Pipeline generated successfully!
-```
+### Documentation
 
-## 🏗️ Architecture
+- **README.md** - Project-specific pipeline documentation
+- **CREDENTIALS_SETUP.md** - Step-by-step Jenkins credential setup
+- **config.encrypted.json** - Encrypted configuration backup
 
-### Project Structure
+## 🔧 Supported Cloud Providers
 
-```
-auto-cicd-generator/
-├── src/
-│   ├── cli.ts                          # CLI entry point
-│   ├── index.ts                        # Package exports
-│   ├── app.module.ts                   # NestJS module
-│   ├── interfaces/
-│   │   └── config.interface.ts         # TypeScript interfaces
-│   └── services/
-│       ├── cicd-generator.service.ts   # Main orchestrator
-│       ├── prompt.service.ts           # User interaction
-│       ├── jenkinsfile.service.ts      # Jenkinsfile generation
-│       ├── cloud-provider.service.ts   # Cloud scripts
-│       ├── notification.service.ts     # Notification code
-│       ├── security.service.ts         # Encryption/security
-│       └── validation.service.ts       # Input validation
-├── package.json
-├── tsconfig.json
-├── README.md
-├── SETUP_GUIDE.md
-└── DEPLOYMENT_CHECKLIST.md
-```
+| Provider         | Service             | Features                                      |
+| ---------------- | ------------------- | --------------------------------------------- |
+| **AWS**          | ECS Fargate         | Auto-scaling, Health checks, CloudWatch logs  |
+| **Azure**        | Container Instances | Resource groups, Managed identities           |
+| **GCP**          | Cloud Run           | Serverless, Auto-scaling, Built-in monitoring |
+| **DigitalOcean** | App Platform        | Simple deployment, Automatic SSL              |
 
-### Technology Stack
+## 🔐 Security Features
 
-- **Framework**: NestJS (Dependency Injection, Modular Architecture)
-- **Language**: TypeScript (Type Safety)
-- **CLI**: Inquirer (Interactive Prompts)
-- **Styling**: Chalk (Colored Output)
-- **Spinner**: Ora (Loading Indicators)
-- **Encryption**: crypto-js (AES-256)
-- **File System**: fs-extra (Enhanced File Operations)
-
-### Generated Pipeline Flow
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  1. CHECKOUT                                                │
-│     └─ Clone repository from Git                           │
-├─────────────────────────────────────────────────────────────┤
-│  2. INSTALL DEPENDENCIES                                    │
-│     └─ npm ci (clean install)                              │
-├─────────────────────────────────────────────────────────────┤
-│  3. RUN TESTS (Optional)                                    │
-│     └─ Execute test command with retry                     │
-├─────────────────────────────────────────────────────────────┤
-│  4. BUILD APPLICATION                                       │
-│     └─ Run build command (npm run build)                   │
-├─────────────────────────────────────────────────────────────┤
-│  5. BUILD DOCKER IMAGE                                      │
-│     └─ docker build from Dockerfile                        │
-├─────────────────────────────────────────────────────────────┤
-│  6. PUSH TO REGISTRY                                        │
-│     └─ Push image to Docker Hub/private registry           │
-├─────────────────────────────────────────────────────────────┤
-│  7. DEPLOY TO CLOUD                                         │
-│     ├─ AWS: ECS Fargate                                    │
-│     ├─ Azure: Container Instances                          │
-│     ├─ GCP: Cloud Run                                      │
-│     └─ DigitalOcean: App Platform                          │
-├─────────────────────────────────────────────────────────────┤
-│  8. HEALTH CHECK                                            │
-│     └─ Verify deployment with health endpoint              │
-├─────────────────────────────────────────────────────────────┤
-│  9. CLEANUP                                                 │
-│     └─ Remove old Docker images                            │
-├─────────────────────────────────────────────────────────────┤
-│  10. NOTIFICATIONS                                          │
-│      ├─ Email (HTML formatted)                             │
-│      ├─ Slack (Rich attachments)                           │
-│      ├─ Discord (Embeds)                                   │
-│      ├─ Teams (Adaptive cards)                             │
-│      └─ Telegram (Markdown)                                │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## 🔧 Configuration Options
-
-### Project Configuration
-
-| Option         | Type    | Description                  | Example                            |
-| -------------- | ------- | ---------------------------- | ---------------------------------- |
-| projectName    | string  | Name of your project         | `my-awesome-app`                   |
-| projectType    | enum    | frontend, backend, fullstack | `backend`                          |
-| language       | enum    | javascript, typescript       | `typescript`                       |
-| repository     | string  | Git repository URL           | `https://github.com/user/repo.git` |
-| branch         | string  | Branch to deploy             | `master`                           |
-| hasDockerfile  | boolean | Dockerfile exists            | `true`                             |
-| dockerfilePath | string  | Path to Dockerfile           | `./Dockerfile`                     |
-| runTests       | boolean | Run tests before deploy      | `true`                             |
-| testCommand    | string  | Test command                 | `npm test`                         |
-| buildCommand   | string  | Build command                | `npm run build`                    |
-
-### Cloud Configuration
-
-#### AWS Options
-
-| Option          | Description       | Example     |
-| --------------- | ----------------- | ----------- |
-| accessKeyId     | AWS Access Key    | `AKIA...`   |
-| secretAccessKey | AWS Secret Key    | `****`      |
-| region          | AWS Region        | `us-east-1` |
-| instanceType    | ECS instance type | `t2.small`  |
-
-#### Azure Options
-
-| Option         | Description         | Example  |
-| -------------- | ------------------- | -------- |
-| subscriptionId | Azure Subscription  | `uuid`   |
-| clientId       | Azure Client ID     | `uuid`   |
-| clientSecret   | Azure Client Secret | `****`   |
-| tenantId       | Azure Tenant ID     | `uuid`   |
-| region         | Azure Region        | `eastus` |
-
-#### GCP Options
-
-| Option    | Description         | Example          |
-| --------- | ------------------- | ---------------- |
-| projectId | GCP Project ID      | `my-project-123` |
-| keyFile   | Service Account Key | `./gcp-key.json` |
-| region    | GCP Region          | `us-central1`    |
-
-#### DigitalOcean Options
-
-| Option   | Description  | Example |
-| -------- | ------------ | ------- |
-| apiToken | DO API Token | `****`  |
-| region   | DO Region    | `nyc3`  |
-
-### Deployment Configuration
-
-| Option          | Type    | Description            | Example      |
-| --------------- | ------- | ---------------------- | ------------ |
-| tier            | string  | Deployment environment | `production` |
-| autoScaling     | boolean | Enable auto-scaling    | `true`       |
-| minInstances    | number  | Minimum instances      | `2`          |
-| maxInstances    | number  | Maximum instances      | `10`         |
-| healthCheckPath | string  | Health check endpoint  | `/health`    |
-| port            | number  | Application port       | `3000`       |
-
-### Notification Configuration
-
-| Platform | Format         | Features                    |
-| -------- | -------------- | --------------------------- |
-| Email    | HTML           | Build status, logs, changes |
-| Slack    | Attachments    | Color coding, fields        |
-| Discord  | Embeds         | Rich formatting, links      |
-| Teams    | Adaptive Cards | Interactive buttons         |
-| Telegram | Markdown       | Emojis, formatting          |
-
-## 🔐 Security
-
-### Credential Management
-
-1. **Never commit credentials** to Git
-2. **Use Jenkins credential storage** for all sensitive data
-3. **Encrypted backups** with AES-256 encryption
-4. **Masked output** in logs and terminal
-5. **Least-privilege** IAM policies recommended
-
-### Best Practices
-
-```yaml
-✅ DO:
-  - Store credentials in Jenkins
-  - Use environment variables
-  - Rotate credentials regularly
-  - Enable MFA on cloud accounts
-  - Review IAM policies
-  - Use HTTPS for Jenkins
-  - Enable audit logging
-
-❌ DON'T:
-  - Commit .cicd/config.encrypted.json
-  - Hardcode credentials in Jenkinsfile
-  - Share credentials in plain text
-  - Use root/admin accounts
-  - Disable security features
-  - Skip credential rotation
-```
+- **AES-256 Encryption** for credential storage
+- **Masked credentials** in all output and logs
+- **Jenkins credential storage** integration
+- **No plain-text secrets** in generated files
+- **Security best practices** documentation
+- **Credential rotation** reminders
 
 ## 📖 Documentation
 
-### Generated Documentation
+- [Setup Guide](./SETUP_GUIDE.md) - Complete installation and setup
+- [Deployment Checklist](./DEPLOYMENT_CHECKLIST.md) - Pre/post deployment steps
+- [Troubleshooting](#troubleshooting) - Common issues and solutions
 
-After running `auto-cicd`, you'll get:
+## 🛠️ Requirements
 
-1. **Jenkinsfile** - Complete pipeline configuration
-2. **.cicd/README.md** - Project-specific documentation
-3. **.cicd/CREDENTIALS_SETUP.md** - Credential setup guide
-4. **.cicd/config.encrypted.json** - Encrypted configuration backup
+### Jenkins Plugins
 
-### Additional Resources
+Required plugins (automatically documented in generated files):
 
-- [SETUP_GUIDE.md](./SETUP_GUIDE.md) - Complete setup instructions
-- [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md) - Deployment checklist
-- [Jenkins Documentation](https://www.jenkins.io/doc/)
-- [Docker Documentation](https://docs.docker.com/)
+- Docker Pipeline
+- Git Plugin
+- Email Extension Plugin
+- Pipeline Plugin
+- Credentials Binding Plugin
+- Blue Ocean (optional)
 
-## 🛠️ Development
+### Cloud Provider Credentials
 
-### Setup Development Environment
+You'll need credentials for your chosen cloud provider:
 
-```bash
-# Clone the repository
-git clone https://github.com/yourorg/auto-cicd-generator.git
-cd auto-cicd-generator
+**AWS:**
 
-# Install dependencies
-npm install
+- Access Key ID
+- Secret Access Key
 
-# Build the project
-npm run build
+**Azure:**
 
-# Link for local testing
-npm link
+- Subscription ID
+- Client ID
+- Client Secret
+- Tenant ID
 
-# Test in a project
-cd /path/to/test-project
-auto-cicd
-```
+**GCP:**
 
-### Project Scripts
+- Project ID
+- Service Account Key File
 
-```bash
-npm run build        # Compile TypeScript to JavaScript
-npm run start        # Run the CLI
-npm run prepublishOnly  # Runs before npm publish
-```
+**DigitalOcean:**
 
-### Publishing
-
-```bash
-# Login to NPM
-npm login
-
-# Publish package
-npm publish --access public
-```
-
-## 🤝 Contributing
-
-We welcome contributions! Here's how:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Contribution Guidelines
-
-- Follow TypeScript best practices
-- Add tests for new features
-- Update documentation
-- Follow existing code style
-- Write clear commit messages
+- API Token
 
 ## 🐛 Troubleshooting
 
-### Common Issues
+### Issue: "Command not found"
 
-<details>
-<summary><strong>Issue: "Dockerfile not found"</strong></summary>
+```bash
+# Reinstall globally
+npm install -g jenkins-generator
 
-**Solution:**
+# Or check npm global bin path
+npm config get prefix
+```
 
-- Ensure Dockerfile exists at the specified path
-- Path should be relative to project root
-- Check file name is exactly `Dockerfile` (case-sensitive)
-</details>
+### Issue: "Dockerfile not found"
 
-<details>
-<summary><strong>Issue: "Failed to push Docker image"</strong></summary>
+- Ensure Dockerfile exists at specified path
+- Check path is relative to project root
+- Verify file name is exactly `Dockerfile` (case-sensitive)
 
-**Solution:**
+### Issue: "Deployment failed"
 
-- Verify Docker registry credentials in Jenkins
-- Check network connectivity
-- Ensure sufficient disk space
-- Verify Docker daemon is running
-</details>
-
-<details>
-<summary><strong>Issue: "Deployment failed"</strong></summary>
-
-**Solution:**
-
-- Verify cloud provider credentials
-- Check instance type is available in selected region
+- Verify cloud provider credentials in Jenkins
+- Check instance type availability in selected region
 - Review deployment logs in cloud console
 - Ensure sufficient permissions/quotas
-</details>
 
-<details>
-<summary><strong>Issue: "Health check failed"</strong></summary>
+### More Help
 
-**Solution:**
+For more troubleshooting, check the generated `.cicd/README.md` in your project.
 
-- Verify health endpoint exists and returns 200 OK
-- Check application actually started
-- Increase health check timeout if needed
-- Review application logs
-</details>
+## 🤝 Contributing
 
-<details>
-<summary><strong>Issue: "Notifications not received"</strong></summary>
+Contributions are welcome! Please:
 
-**Solution:**
-
-- Verify email SMTP settings in Jenkins
-- Check webhook URLs are accessible
-- Test notification channels manually
-- Review firewall rules
-</details>
-
-## 📊 Use Cases
-
-### Startups & Small Teams
-
-- Quick CI/CD setup without DevOps expertise
-- Multi-cloud flexibility
-- Cost-effective automated deployments
-
-### Enterprise
-
-- Standardized pipeline across teams
-- Security best practices built-in
-- Consistent deployment process
-
-### Open Source Projects
-
-- Easy contributor onboarding
-- Automated releases
-- Free tier cloud deployments
-
-### Microservices
-
-- Replicate pipeline for each service
-- Consistent deployment patterns
-- Individual service scaling
-
-## 🎓 Examples
-
-### Dockerfile Examples
-
-<details>
-<summary><strong>Node.js Backend</strong></summary>
-
-```dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci --only=production
-
-COPY . .
-RUN npm run build
-
-EXPOSE 3000
-
-CMD ["node", "dist/main.js"]
-```
-
-</details>
-
-<details>
-<summary><strong>React Frontend</strong></summary>
-
-```dockerfile
-FROM node:18-alpine as builder
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci
-
-COPY . .
-RUN npm run build
-
-FROM nginx:alpine
-COPY --from=builder /app/build /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-</details>
-
-<details>
-<summary><strong>TypeScript API</strong></summary>
-
-```dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-
-COPY package*.json ./
-COPY tsconfig*.json ./
-
-RUN npm ci
-
-COPY . .
-RUN npm run build
-
-RUN npm ci --only=production
-
-EXPOSE 3000
-
-CMD ["node", "dist/main.js"]
-```
-
-</details>
-
-## 📈 Roadmap
-
-### Version 1.x (Current)
-
-- ✅ Multi-cloud support (AWS, Azure, GCP, DigitalOcean)
-- ✅ Multi-channel notifications
-- ✅ Docker-based deployments
-- ✅ Security features
-
-### Version 2.0 (Planned)
-
-- [ ] Kubernetes support
-- [ ] Helm chart generation
-- [ ] Blue-green deployments
-- [ ] Canary deployments
-- [ ] A/B testing support
-
-### Version 3.0 (Future)
-
-- [ ] GitLab CI/CD support
-- [ ] GitHub Actions support
-- [ ] CircleCI support
-- [ ] Advanced monitoring integration
-- [ ] Cost optimization recommendations
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## 📄 License
 
@@ -735,10 +338,9 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 ## 📞 Support
 
-- 📧 Email: support@yourorg.com
-- 💬 Discord: [Join our community](https://discord.gg/yourserver)
-- 🐛 Issues: [GitHub Issues](https://github.com/yourorg/auto-cicd-generator/issues)
-- 📚 Docs: [Full Documentation](https://docs.yourorg.com)
+- 📧 **Email:** support@yourcompany.com
+- 🐛 **Issues:** [GitHub Issues](https://github.com/yourusername/jenkins-generator/issues)
+- 📚 **Docs:** Full documentation in generated `.cicd/` folder
 
 ## ⭐ Show Your Support
 
@@ -756,8 +358,8 @@ If this tool helped you, please:
 _Stop configuring CI/CD manually. Start deploying automatically!_
 
 ```bash
-npm install -g @yourorg/auto-cicd-generator
+npm install -g jenkins-generator
 cd your-project
-auto-cicd
+jenkins-generator
 # That's it! 🎉
 ```
