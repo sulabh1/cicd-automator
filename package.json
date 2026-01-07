@@ -1,0 +1,49 @@
+{
+  "name": "cicd-automator",
+  "version": "1.0.0",
+  "description": "Automate Jenkins CICD pipeline generator for multi-cloud deployments",
+  "main": "dist/index.js",
+  "bin": {
+    "auto-cicd": "./dist/cli.js"
+  },
+  "author": "SWIKRIT(AKA SULABH) ADHIKARI",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "jenkins",
+    "cicd",
+    "aws",
+    "azure",
+    "gcp",
+    "digitalocean",
+    "sutomation"
+  ],
+  "dependencies": {
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/core": "^11.0.1",
+    "chalk": "^5.6.2",
+    "comander": "^0.0.1-security",
+    "crypto-js": "^4.2.0",
+    "dotenv": "^17.2.3",
+    "fs-extra": "^11.3.3",
+    "inquirer": "^13.1.0",
+    "ora": "^9.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.9",
+    "@types/node": "^22.10.7",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
