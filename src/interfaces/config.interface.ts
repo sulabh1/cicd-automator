@@ -9,6 +9,25 @@ export interface ProjectConfig {
   runTests: boolean;
   testCommand?: string;
   buildCommand?: string;
+  requiresEnvFile: boolean;
+  envFilePath?: string;
+  externalServices: ExternalService[];
+}
+
+export interface ExternalService {
+  type:
+    | 'database'
+    | 'cache'
+    | 'queue'
+    | 'storage'
+    | 'email'
+    | 'monitoring'
+    | 'custom';
+  name: string;
+  service: string; // e.g., 'postgresql', 'mongodb', 'redis', 'rabbitmq', 's3', 'smtp'
+  envVariables: EnvVariable[];
+  connectionString?: string;
+  requiresInfrastructure: boolean;
 }
 
 export interface CloudConfig {
@@ -21,6 +40,22 @@ export interface CloudConfig {
   region: string;
   instanceType: string;
   deploymentConfig: DeploymentConfig;
+  managedServices: ManagedService[];
+}
+
+export interface ManagedService {
+  type: 'database' | 'cache' | 'queue' | 'storage';
+  service: string;
+  tier: string;
+  autoProvision: boolean;
+  existingResourceId?: string;
+}
+
+export interface EnvVariable {
+  key: string;
+  value?: string;
+  isSecret: boolean;
+  description: string;
 }
 
 export interface AWSCredentials {
@@ -54,6 +89,7 @@ export interface DeploymentConfig {
   maxInstances?: number;
   healthCheckPath: string;
   port: number;
+  environmentVariables: { [key: string]: string };
 }
 
 export interface NotificationConfig {
@@ -79,4 +115,5 @@ export interface JenkinsConfig {
   agentLabel: string;
   timeout: number;
   retryCount: number;
+  environmentVariables: { [key: string]: string };
 }
