@@ -6,6 +6,7 @@ import { CloudProviderService } from './services/cloud-provider.service';
 import { SecurityService } from './services/security.service';
 import { ValidationService } from './services/validation.service';
 import { NotificationService } from './services/notification.service';
+import { EnvironmentService } from './services/environment.service';
 
 @Module({
   imports: [],
@@ -17,6 +18,7 @@ import { NotificationService } from './services/notification.service';
     SecurityService,
     ValidationService,
     NotificationService,
+    EnvironmentService,
   ],
 })
 export class AppModule {}

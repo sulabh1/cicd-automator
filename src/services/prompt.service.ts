@@ -5,6 +5,9 @@ import {
   CloudConfig,
   ProjectConfig,
   NotificationConfig,
+  ExternalService,
+  EnvVariable,
+  JenkinsConfig,
   NotificationPlatform,
 } from '../interfaces/config.interface';
 import { ValidationService } from './validation.service';
@@ -15,9 +18,21 @@ export class PromptService {
 
   async collectAllConfigurations(): Promise<CICDConfig> {
     const projectConfig = await this.collectProjectConfig();
+    const externalServices = await this.collectExternalServices();
+    projectConfig.externalServices = externalServices;
+
     const cloudConfig = await this.collectCloudConfig();
     const notificationConfig = await this.collectNotificationConfig();
     const jenkinsConfig = await this.collectJenkinsConfig();
+
+    // Collect environment variables from all sources
+    const allEnvVars = this.consolidateEnvironmentVariables(
+      projectConfig,
+      externalServices,
+    );
+    jenkinsConfig.environmentVariables = allEnvVars;
+    cloudConfig.deploymentConfig.environmentVariables = allEnvVars;
+
     return {
       project: projectConfig,
       cloud: cloudConfig,
@@ -123,7 +138,612 @@ export class PromptService {
     ]);
     answers.buildCommand = buildConfig.buildCommand;
 
+    // Ask about .env file
+    const envConfig = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'requiresEnvFile',
+        message: 'Does your application use a .env file?',
+        default: true,
+      },
+    ]);
+    answers.requiresEnvFile = envConfig.requiresEnvFile;
+
+    if (answers.requiresEnvFile) {
+      const envPath = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'envFilePath',
+          message: 'Enter .env file path (relative to project root):',
+          default: './.env',
+        },
+      ]);
+      answers.envFilePath = envPath.envFilePath;
+    }
+
     return answers as ProjectConfig;
+  }
+
+  private async collectExternalServices(): Promise<ExternalService[]> {
+    const services: ExternalService[] = [];
+
+    const needsServices = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'hasExternalServices',
+        message:
+          'Does your application use external services (database, cache, queue, etc.)?',
+        default: true,
+      },
+    ]);
+
+    if (!needsServices.hasExternalServices) {
+      return services;
+    }
+
+    console.log("\n📦 Let's configure your external services...\n");
+
+    let addMore = true;
+
+    while (addMore) {
+      const serviceType = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'type',
+          message: 'Select service type:',
+          choices: [
+            {
+              name: '🗄️  Database (PostgreSQL, MongoDB, MySQL, etc.)',
+              value: 'database',
+            },
+            { name: '⚡ Cache (Redis, Memcached)', value: 'cache' },
+            { name: '📨 Message Queue (RabbitMQ, Kafka, SQS)', value: 'queue' },
+            { name: '📦 Storage (S3, Azure Blob, GCS)', value: 'storage' },
+            { name: '📧 Email (SMTP, SendGrid, SES)', value: 'email' },
+            {
+              name: '📊 Monitoring (DataDog, New Relic, Sentry)',
+              value: 'monitoring',
+            },
+            { name: '🔧 Custom Service', value: 'custom' },
+          ],
+        },
+      ]);
+
+      let service: ExternalService;
+
+      switch (serviceType.type) {
+        case 'database':
+          service = await this.configureDatabaseService();
+          break;
+        case 'cache':
+          service = await this.configureCacheService();
+          break;
+        case 'queue':
+          service = await this.configureQueueService();
+          break;
+        case 'storage':
+          service = await this.configureStorageService();
+          break;
+        case 'email':
+          service = await this.configureEmailService();
+          break;
+        case 'monitoring':
+          service = await this.configureMonitoringService();
+          break;
+        case 'custom':
+          service = await this.configureCustomService();
+          break;
+        default:
+          // Fallback to custom service configuration for unexpected types
+          service = await this.configureCustomService();
+          break;
+      }
+
+      services.push(service);
+
+      const continueAdding = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'addMore',
+          message: 'Add another service?',
+          default: false,
+        },
+      ]);
+
+      addMore = continueAdding.addMore;
+    }
+
+    return services;
+  }
+
+  private async configureDatabaseService(): Promise<ExternalService> {
+    const config = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'service',
+        message: 'Select database type:',
+        choices: [
+          'postgresql',
+          'mongodb',
+          'mysql',
+          'mariadb',
+          'redis',
+          'dynamodb',
+          'cosmosdb',
+        ],
+      },
+      {
+        type: 'input',
+        name: 'name',
+        message: 'Enter a name for this database connection:',
+        default: (answers) => `${answers.service}-main`,
+      },
+    ]);
+    const envVars: EnvVariable[] = [];
+    const dbEnvVars = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'host',
+        message: 'Database host environment variable name:',
+        default: 'DB_HOST',
+      },
+      {
+        type: 'input',
+        name: 'port',
+        message: 'Database port environment variable name:',
+        default: 'DB_PORT',
+      },
+      {
+        type: 'input',
+        name: 'database',
+        message: 'Database name environment variable name:',
+        default: 'DB_NAME',
+      },
+      {
+        type: 'input',
+        name: 'username',
+        message: 'Database username environment variable name:',
+        default: 'DB_USERNAME',
+      },
+      {
+        type: 'input',
+        name: 'password',
+        message: 'Database password environment variable name:',
+        default: 'DB_PASSWORD',
+      },
+    ]);
+
+    envVars.push(
+      { key: dbEnvVars.host, isSecret: false, description: 'Database host' },
+      { key: dbEnvVars.port, isSecret: false, description: 'Database port' },
+      {
+        key: dbEnvVars.database,
+        isSecret: false,
+        description: 'Database name',
+      },
+      {
+        key: dbEnvVars.username,
+        isSecret: true,
+        description: 'Database username',
+      },
+      {
+        key: dbEnvVars.password,
+        isSecret: true,
+        description: 'Database password',
+      },
+    );
+
+    const connectionString = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'useConnectionString',
+        message: 'Do you also use a connection string/URL?',
+        default: true,
+      },
+    ]);
+    if (connectionString.useConnectionString) {
+      const connStr = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'key',
+          message: 'Connection string environment variable name:',
+          default: 'DATABASE_URL',
+        },
+      ]);
+      envVars.push({
+        key: connStr.key,
+        isSecret: true,
+        description: 'Database connection string',
+      });
+    }
+
+    return {
+      type: 'database',
+      name: config.name,
+      service: config.service,
+      envVariables: envVars,
+      requiresInfrastructure: true,
+    };
+  }
+
+  private async configureCacheService(): Promise<ExternalService> {
+    const config = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'service',
+        message: 'Select cache type:',
+        choices: ['redis', 'memcached', 'elasticache'],
+      },
+      {
+        type: 'input',
+        name: 'name',
+        message: 'Enter a name for this cache connection:',
+        default: (answers) => `${answers.service}-cache`,
+      },
+    ]);
+
+    const envVars: EnvVariable[] = [];
+    const cacheEnvVars = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'host',
+        message: 'Cache host environment variable name:',
+        default: 'REDIS_HOST',
+      },
+      {
+        type: 'input',
+        name: 'port',
+        message: 'Cache port environment variable name:',
+        default: 'REDIS_PORT',
+      },
+      {
+        type: 'confirm',
+        name: 'requiresPassword',
+        message: 'Does cache require password?',
+        default: true,
+      },
+    ]);
+
+    envVars.push(
+      { key: cacheEnvVars.host, isSecret: false, description: 'Cache host' },
+      { key: cacheEnvVars.port, isSecret: false, description: 'Cache port' },
+    );
+
+    if (cacheEnvVars.requiresPassword) {
+      const password = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'key',
+          message: 'Cache password environment variable name:',
+          default: 'REDIS_PASSWORD',
+        },
+      ]);
+      envVars.push({
+        key: password.key,
+        isSecret: true,
+        description: 'Cache password',
+      });
+    }
+
+    return {
+      type: 'cache',
+      name: config.name,
+      service: config.service,
+      envVariables: envVars,
+      requiresInfrastructure: true,
+    };
+  }
+
+  private async configureQueueService(): Promise<ExternalService> {
+    const config = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'service',
+        message: 'Select message queue type:',
+        choices: ['rabbitmq', 'kafka', 'sqs', 'redis', 'azure-service-bus'],
+      },
+      {
+        type: 'input',
+        name: 'name',
+        message: 'Enter a name for this queue connection:',
+        default: (answers) => `${answers.service}-queue`,
+      },
+    ]);
+
+    const envVars: EnvVariable[] = [];
+    const queueEnvVars = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'url',
+        message: 'Queue URL/connection string environment variable name:',
+        default:
+          config.service === 'rabbitmq'
+            ? 'RABBITMQ_URL'
+            : `${config.service.toUpperCase()}_URL`,
+      },
+    ]);
+    envVars.push({
+      key: queueEnvVars.url,
+      isSecret: true,
+      description: 'Message queue connection',
+    });
+
+    return {
+      type: 'queue',
+      name: config.name,
+      service: config.service,
+      envVariables: envVars,
+      requiresInfrastructure: true,
+    };
+  }
+
+  private async configureStorageService(): Promise<ExternalService> {
+    const config = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'service',
+        message: 'Select storage service:',
+        choices: ['s3', 'azure-blob', 'gcs', 'minio', 'spaces'],
+      },
+      {
+        type: 'input',
+        name: 'name',
+        message: 'Enter a name for this storage connection:',
+        default: (answers) => `${answers.service}-storage`,
+      },
+    ]);
+
+    const envVars: EnvVariable[] = [];
+
+    if (
+      config.service === 's3' ||
+      config.service === 'spaces' ||
+      config.service === 'minio'
+    ) {
+      const s3EnvVars = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'bucket',
+          message: 'Bucket name environment variable:',
+          default: 'S3_BUCKET',
+        },
+        {
+          type: 'input',
+          name: 'region',
+          message: 'Region environment variable:',
+          default: 'S3_REGION',
+        },
+        {
+          type: 'input',
+          name: 'accessKey',
+          message: 'Access key environment variable:',
+          default: 'S3_ACCESS_KEY',
+        },
+        {
+          type: 'input',
+          name: 'secretKey',
+          message: 'Secret key environment variable:',
+          default: 'S3_SECRET_KEY',
+        },
+      ]);
+
+      envVars.push(
+        {
+          key: s3EnvVars.bucket,
+          isSecret: false,
+          description: 'Storage bucket name',
+        },
+        {
+          key: s3EnvVars.region,
+          isSecret: false,
+          description: 'Storage region',
+        },
+        {
+          key: s3EnvVars.accessKey,
+          isSecret: true,
+          description: 'Storage access key',
+        },
+        {
+          key: s3EnvVars.secretKey,
+          isSecret: true,
+          description: 'Storage secret key',
+        },
+      );
+    }
+
+    return {
+      type: 'storage',
+      name: config.name,
+      service: config.service,
+      envVariables: envVars,
+      requiresInfrastructure: false,
+    };
+  }
+
+  private async configureEmailService(): Promise<ExternalService> {
+    const config = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'service',
+        message: 'Select email service:',
+        choices: ['smtp', 'sendgrid', 'ses', 'mailgun', 'postmark'],
+      },
+      {
+        type: 'input',
+        name: 'name',
+        message: 'Enter a name for this email service:',
+        default: (answers) => `${answers.service}-email`,
+      },
+    ]);
+
+    const envVars: EnvVariable[] = [];
+
+    if (config.service === 'smtp') {
+      const smtpEnvVars = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'host',
+          message: 'SMTP host environment variable:',
+          default: 'SMTP_HOST',
+        },
+        {
+          type: 'input',
+          name: 'port',
+          message: 'SMTP port environment variable:',
+          default: 'SMTP_PORT',
+        },
+        {
+          type: 'input',
+          name: 'username',
+          message: 'SMTP username environment variable:',
+          default: 'SMTP_USERNAME',
+        },
+        {
+          type: 'input',
+          name: 'password',
+          message: 'SMTP password environment variable:',
+          default: 'SMTP_PASSWORD',
+        },
+      ]);
+
+      envVars.push(
+        { key: smtpEnvVars.host, isSecret: false, description: 'SMTP host' },
+        { key: smtpEnvVars.port, isSecret: false, description: 'SMTP port' },
+        {
+          key: smtpEnvVars.username,
+          isSecret: true,
+          description: 'SMTP username',
+        },
+        {
+          key: smtpEnvVars.password,
+          isSecret: true,
+          description: 'SMTP password',
+        },
+      );
+    } else {
+      const apiKeyEnvVar = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'key',
+          message: `${config.service.toUpperCase()} API key environment variable:`,
+          default: `${config.service.toUpperCase()}_API_KEY`,
+        },
+      ]);
+      envVars.push({
+        key: apiKeyEnvVar.key,
+        isSecret: true,
+        description: `${config.service} API key`,
+      });
+    }
+
+    return {
+      type: 'email',
+      name: config.name,
+      service: config.service,
+      envVariables: envVars,
+      requiresInfrastructure: false,
+    };
+  }
+
+  private async configureMonitoringService(): Promise<ExternalService> {
+    const config = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'service',
+        message: 'Select monitoring service:',
+        choices: ['datadog', 'newrelic', 'sentry', 'prometheus', 'grafana'],
+      },
+      {
+        type: 'input',
+        name: 'name',
+        message: 'Enter a name for this monitoring service:',
+        default: (answers) => `${answers.service}-monitoring`,
+      },
+    ]);
+
+    const envVars: EnvVariable[] = [];
+    const monitoringEnvVars = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'apiKey',
+        message: `${config.service.toUpperCase()} API key environment variable:`,
+        default: `${config.service.toUpperCase()}_API_KEY`,
+      },
+    ]);
+    envVars.push({
+      key: monitoringEnvVars.apiKey,
+      isSecret: true,
+      description: `${config.service} API key`,
+    });
+
+    return {
+      type: 'monitoring',
+      name: config.name,
+      service: config.service,
+      envVariables: envVars,
+      requiresInfrastructure: false,
+    };
+  }
+
+  private async configureCustomService(): Promise<ExternalService> {
+    const config = await inquirer.prompt([
+      { type: 'input', name: 'service', message: 'Enter service name:' },
+      {
+        type: 'input',
+        name: 'name',
+        message: 'Enter a display name for this service:',
+        default: (answers) => answers.service,
+      },
+    ]);
+
+    const envVars: EnvVariable[] = [];
+    let addMore = true;
+    console.log('\nAdd environment variables for this service:\n');
+
+    while (addMore) {
+      const envVar = await inquirer.prompt([
+        { type: 'input', name: 'key', message: 'Environment variable name:' },
+        {
+          type: 'confirm',
+          name: 'isSecret',
+          message: 'Is this a secret/sensitive value?',
+          default: true,
+        },
+        { type: 'input', name: 'description', message: 'Description:' },
+      ]);
+
+      envVars.push(envVar);
+      const continueAdding = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'addMore',
+          message: 'Add another environment variable?',
+          default: false,
+        },
+      ]);
+      addMore = continueAdding.addMore;
+    }
+
+    return {
+      type: 'custom',
+      name: config.name,
+      service: config.service,
+      envVariables: envVars,
+      requiresInfrastructure: false,
+    };
+  }
+
+  private consolidateEnvironmentVariables(
+    projectConfig: ProjectConfig,
+    externalServices: ExternalService[],
+  ): { [key: string]: string } {
+    const envVars: { [key: string]: string } = {};
+    for (const service of externalServices) {
+      for (const envVar of service.envVariables) {
+        envVars[envVar.key] = envVar.description;
+      }
+    }
+    return envVars;
   }
 
   private async collectCloudConfig(): Promise<CloudConfig> {
@@ -160,6 +780,7 @@ export class PromptService {
       region: credentials.region,
       instanceType: deploymentConfig.instanceType,
       deploymentConfig: deploymentConfig.config,
+      managedServices: [], // Will be populated later based on external services
     };
   }
   private async collectAWSCredentials() {
@@ -355,6 +976,7 @@ export class PromptService {
         maxInstances,
         healthCheckPath: healthConfig.healthCheckPath,
         port: healthConfig.port,
+        environmentVariables: {}, // Will be populated later
       },
     };
   }
@@ -409,8 +1031,8 @@ export class PromptService {
     };
   }
 
-  private async collectJenkinsConfig() {
-    return await inquirer.prompt([
+  private async collectJenkinsConfig(): Promise<JenkinsConfig> {
+    const answers = await inquirer.prompt([
       {
         type: 'input',
         name: 'agentLabel',
@@ -430,5 +1052,12 @@ export class PromptService {
         default: 2,
       },
     ]);
+
+    return {
+      agentLabel: answers.agentLabel,
+      timeout: answers.timeout,
+      retryCount: answers.retryCount,
+      environmentVariables: {}, // Will be populated later
+    };
   }
 }

@@ -7,3 +7,4 @@ export * from './services/prompt.service';
 export * from './services/security.service';
 export * from './services/validation.service';
 export * from './interfaces/config.interface';
+export * from './services/environment.service';
